@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <title>MO Hunt Map</title>
+    <meta name="description" content="Personal hunting map for Missouri public land, with offline maps." />
+    <meta name="theme-color" content="#2f4a2a" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" type="image/png" href="./icons/favicon-32.png" />
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Hunt Map" />
+  </head>
+  <body>
+    <div id="map" aria-label="Map"></div>
+
+    <!-- Top: GPS status chip + recording chip -->
+    <div class="top-chips">
+      <button id="gps-chip" class="chip hidden" type="button" aria-live="polite"></button>
+      <button id="rec-chip" class="chip rec hidden" type="button" aria-live="polite"></button>
+      <button id="dl-chip" class="chip dl hidden" type="button" aria-live="polite"><span class="dl-text"></span><span class="dl-bar"><span></span></span></button>
+    </div>
+
+    <!-- Crosshair shown while placing a waypoint -->
+    <div id="crosshair" class="crosshair hidden" aria-hidden="true"><span></span></div>
+    <div id="place-bar" class="place-bar hidden">
+      <p>Move the map so the <b>+</b> is on the spot</p>
+      <div class="actions">
+        <button type="button" class="btn primary" id="place-here">Drop here</button>
+        <button type="button" class="btn" id="place-me">At my location</button>
+        <button type="button" class="btn" id="place-cancel">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Measure bar -->
+    <div id="measure-bar" class="place-bar hidden">
+      <div class="seg" id="measure-seg" role="radiogroup">
+        <button type="button" role="radio" data-mode="line" aria-checked="true">Distance</button>
+        <button type="button" role="radio" data-mode="area" aria-checked="false">Area</button>
+      </div>
+      <p class="measure-main" id="measure-main"></p>
+      <p class="measure-sub" id="measure-sub"></p>
+      <div class="actions">
+        <button type="button" class="btn" id="measure-undo">Undo</button>
+        <button type="button" class="btn" id="measure-clear">Clear</button>
+        <button type="button" class="btn primary" id="measure-done">Done</button>
+      </div>
+    </div>
+
+    <!-- Offline download: frame + options -->
+    <div id="select-frame" class="select-frame hidden" aria-hidden="true"><span>Move and zoom the map to fit the area in this box</span></div>
+    <div id="offline-bar" class="place-bar offline-bar hidden">
+      <label class="field compact">Name<input id="area-name" maxlength="40" autocomplete="off" enterkeyhint="done" /></label>
+      <div class="opt-row">
+        <label class="row"><input type="checkbox" data-layer="topo" checked /> <span>Topo</span></label>
+        <label class="row"><input type="checkbox" data-layer="photo" checked /> <span>USGS Photo</span></label>
+      </div>
+      <div class="seg" id="detail-seg" role="radiogroup" aria-label="Detail">
+        <button type="button" role="radio" data-z="14" aria-checked="false">Good</button>
+        <button type="button" role="radio" data-z="15" aria-checked="true">Better</button>
+        <button type="button" role="radio" data-z="16" aria-checked="false">Best</button>
+      </div>
+      <p class="measure-sub" id="offline-est"></p>
+      <div class="actions">
+        <button type="button" class="btn primary" id="offline-go">Download</button>
+        <button type="button" class="btn" id="offline-cancel">Cancel</button>
+      </div>
+    </div>
+
+    <!-- hidden file picker for importing GPX / GeoJSON -->
+    <input type="file" id="import-file" accept=".gpx,.geojson,.json,application/gpx+xml,application/geo+json,application/json,text/xml,application/xml" hidden />
+
+    <!-- Left-hand buttons: saved list, record track -->
+    <div class="fab-stack left">
+      <button id="btn-measure" class="fab" type="button" aria-label="Measure distance or area">
+        <svg viewBox="0 0 24 24"><path d="M3 17 17 3l4 4L7 21l-4-4Z"/><path d="m7 13 2 2M10 10l2 2M13 7l2 2"/></svg>
+      </button>
+      <button id="btn-saved" class="fab" type="button" aria-label="My waypoints and tracks">
+        <svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1.2"/><circle cx="3.5" cy="12" r="1.2"/><circle cx="3.5" cy="18" r="1.2"/></svg>
+      </button>
+      <button id="btn-record" class="fab" type="button" aria-label="Record a track">
+        <svg viewBox="0 0 24 24"><path d="M4 19c3-1 3-6 6-7s5 3 8 1 2-7 2-7"/><circle cx="4" cy="19" r="2"/></svg>
+        <span class="fab-label">Track</span>
+      </button>
+    </div>
+
+    <!-- Right-hand button stack (thumb reach) -->
+    <div class="fab-stack">
+      <button id="btn-layers" class="fab" type="button" aria-label="Map layers">
+        <svg viewBox="0 0 24 24"><path d="M12 3 2 8.5 12 14l10-5.5L12 3Z"/><path d="m2 12.5 10 5.5 10-5.5"/><path d="m2 16.5 10 5.5 10-5.5"/></svg>
+      </button>
+      <button id="btn-north" class="fab" type="button" aria-label="Reset to north up">
+        <svg viewBox="0 0 24 24" id="north-needle"><path d="M12 2 7 12h10L12 2Z" class="needle-n"/><path d="M12 22 7 12h10l-5 10Z" class="needle-s"/></svg>
+      </button>
+      <button id="btn-add" class="fab" type="button" aria-label="Add a waypoint">
+        <svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Z"/><path d="M12 6.5v6M9 9.5h6"/></svg>
+      </button>
+      <button id="btn-locate" class="fab fab-big" type="button" aria-label="Show my location">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/><circle cx="12" cy="12" r="8"/></svg>
+      </button>
+    </div>
+
+    <!-- Bottom sheet: info about tapped areas -->
+    <section id="sheet" class="sheet hidden" aria-live="polite">
+      <button class="sheet-close" type="button" aria-label="Close">✕</button>
+      <div id="sheet-body"></div>
+    </section>
+
+    <!-- Layers panel -->
+    <section id="layers-panel" class="sheet panel hidden" aria-label="Layers">
+      <button class="sheet-close" type="button" aria-label="Close">✕</button>
+      <h2>Base map</h2>
+      <div class="seg" id="basemap-seg" role="radiogroup"></div>
+      <label class="row" id="row-labels"><input type="checkbox" id="chk-labels" /> <span>Roads &amp; place names (online only)</span></label>
+      <h2>Public land</h2>
+      <div id="overlay-list"></div>
+      <h2>Offline maps</h2>
+      <p class="fine">Download Topo and USGS Photo maps for places with no signal. Public land boundaries already work offline.</p>
+      <button type="button" class="btn primary wide" id="btn-offline-new">Download an area</button>
+      <label class="row"><input type="checkbox" id="chk-area-outlines" /> <span>Show downloaded areas on map</span></label>
+      <div id="area-list"></div>
+      <p class="fine" id="storage-usage"></p>
+      <h2>Private land</h2>
+      <a class="row link" href="https://vernon.integritygis.com/" target="_blank" rel="noopener">
+        <span class="swatch" style="--c:#999"></span><span>Vernon County parcel viewer (owners &amp; acres, opens county site, needs signal)</span>
+      </a>
+      <p class="fine" id="data-date"></p>
+      <p class="fine">Boundaries are for reference only. Always check MDC area regulations and posted signs.</p>
+    </section>
+
+    <!-- Toasts (update available, install hint) -->
+    <div id="toast" class="toast hidden"></div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
