@@ -10,6 +10,7 @@ import { distance, fmtDistance, fmtDuration, fmtDate } from './geo.js';
 import { createMeasure } from './measure.js';
 import { toGPX, toGeoJSON, shareFile, exportName, parseFile } from './io.js';
 import { initOffline } from './offline-ui.js';
+import { createWind } from './wind.js';
 
 const $ = (sel) => document.querySelector(sel);
 const app = createMap('map');
@@ -56,8 +57,14 @@ turnNeedle();
 $('#btn-north').addEventListener('click', () => locator.northUp());
 
 // ---------------- Waypoints ----------------
-const waypoints = createWaypoints(map, { getMyPosition: () => locator.position });
+let wind = null; // created below; waypoints tell it when stands change
+const waypoints = createWaypoints(map, {
+  getMyPosition: () => locator.position,
+  onChange: () => wind?.redraw(),
+  onWind: (wp) => wind?.forStand(wp),
+});
 waypoints.load();
+wind = createWind(map, { getWaypoints: () => waypoints.list() });
 
 let placing = false;
 function startPlacing() {
@@ -329,6 +336,10 @@ seg.addEventListener('click', (e) => {
   renderSeg();
 });
 renderSeg();
+
+const chkWind = $('#chk-wind');
+chkWind.checked = wind.show;
+chkWind.addEventListener('change', () => wind.setShow(chkWind.checked));
 
 const chkLabels = $('#chk-labels');
 chkLabels.checked = app.prefs.labels;

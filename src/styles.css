@@ -138,6 +138,55 @@ body.placing .fab-stack, body.measuring .fab-stack.left, body.measuring #btn-add
 .measure-main { margin: 12px 0 0; text-align: center; font-size: 26px; font-weight: 800; }
 .measure-sub { margin: 2px 0 0; text-align: center; color: var(--muted); min-height: 1.2em; }
 body.measuring .fab-stack:not(.left) { bottom: calc(250px + var(--safe-b)); }
+/* ---------- Wind ---------- */
+.chip.wind {
+  font-family: inherit;
+  font-size: 15px;
+  padding: 7px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.72);
+}
+.wind-arrow { fill: currentColor; flex: none; }
+.chip.wind .wind-arrow { fill: #7fd3ff; }
+.w-title { margin: 4px 0 6px; font-size: 20px; }
+.wind-list { list-style: none; margin: 6px 0; padding: 0; }
+.wind-list .day {
+  position: sticky;
+  top: -16px;
+  background: var(--panel);
+  padding: 10px 0 4px;
+  font-weight: 700;
+  color: var(--muted);
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  z-index: 1;
+}
+.wind-list button {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 52px 26px 40px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 4px 6px;
+  border: none;
+  border-bottom: 1px solid #ececec;
+  background: none;
+  font: 16px system-ui, sans-serif;
+  color: #111;
+  text-align: left;
+  cursor: pointer;
+}
+.wind-list button.picked { background: #fff1e8; box-shadow: inset 4px 0 0 #ff5a1f; }
+.wind-list .wind-arrow { fill: #1565c0; }
+.w-time { font-weight: 700; }
+.w-dir { font-weight: 700; }
+.w-spd small, .w-temp small { color: var(--muted); }
+.w-temp { text-align: right; }
+
 /* ---------- Offline download ---------- */
 .select-frame {
   position: fixed;

@@ -16,7 +16,7 @@ export const TYPES = {
   other: { label: 'Other', icon: '📍', color: '#7b1fa2' },
 };
 
-export function createWaypoints(map, { getMyPosition }) {
+export function createWaypoints(map, { getMyPosition, onChange = () => {}, onWind = () => {} }) {
   const items = new Map(); // id -> { wp, marker }
   let visible = true;
 
@@ -45,18 +45,21 @@ export function createWaypoints(map, { getMyPosition }) {
   async function load() {
     const all = await getAll('waypoints');
     all.forEach(render);
+    onChange();
   }
 
   async function save(wp) {
     wp.updated = Date.now();
     await put('waypoints', wp);
     render(wp);
+    onChange();
   }
 
   async function del(id) {
     await remove('waypoints', id);
     items.get(id)?.marker.remove();
     items.delete(id);
+    onChange();
   }
 
   // Short names under icons only when zoomed in enough to read them.
@@ -88,6 +91,7 @@ export function createWaypoints(map, { getMyPosition }) {
         </dl>
         ${wp.notes ? `<p class="notes">${esc(wp.notes)}</p>` : ''}
         <div class="actions">
+          <button type="button" class="btn" data-act="wind">🌬 Wind</button>
           <button type="button" class="btn" data-act="edit">Edit</button>
           <button type="button" class="btn" data-act="share">Share</button>
           <button type="button" class="btn" data-act="copy">Copy coords</button>
@@ -97,6 +101,7 @@ export function createWaypoints(map, { getMyPosition }) {
     body.onclick = async (e) => {
       const act = e.target.closest('[data-act]')?.dataset.act;
       if (act === 'edit') openEditor(wp);
+      if (act === 'wind') onWind(wp);
       if (act === 'share') shareFile(toGPX({ waypoints: [wp] }), exportName(wp.name, 'gpx'), 'application/gpx+xml');
       if (act === 'copy') {
         const text = `${wp.lat.toFixed(6)}, ${wp.lng.toFixed(6)}`;

@@ -21,6 +21,7 @@
     <div class="top-chips">
       <button id="gps-chip" class="chip hidden" type="button" aria-live="polite"></button>
       <button id="rec-chip" class="chip rec hidden" type="button" aria-live="polite"></button>
+      <button id="wind-chip" class="chip wind hidden" type="button" aria-label="Wind forecast"></button>
       <button id="dl-chip" class="chip dl hidden" type="button" aria-live="polite"><span class="dl-text"></span><span class="dl-bar"><span></span></span></button>
     </div>
 
@@ -115,6 +116,7 @@
       <h2>Base map</h2>
       <div class="seg" id="basemap-seg" role="radiogroup"></div>
       <label class="row" id="row-labels"><input type="checkbox" id="chk-labels" /> <span>Roads &amp; place names (online only)</span></label>
+      <label class="row"><input type="checkbox" id="chk-wind" /> <span>Show wind forecast (needs signal; last forecast is saved)</span></label>
       <h2>Public land</h2>
       <div id="overlay-list"></div>
       <h2>Offline maps</h2>

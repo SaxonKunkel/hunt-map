@@ -24,6 +24,13 @@ A free, personal hunting map for Missouri that you install on your phone like an
 - Each area is capped at 20,000 tiles (about a 25-mile box at Best detail) to respect the free USGS servers
 - Downloaded areas show as dashed white boxes. Delete them from the same panel
 
+## Wind
+- The bar at the top shows the wind forecast where the map is centered. Tap it for an hour-by-hour forecast for the next 2 days
+- Tap an hour to see the scent cones for that time: shaded orange cones point downwind from every stand and blind
+- Every waypoint card has a Wind button for that exact spot
+- Forecasts come from [Open-Meteo](https://open-meteo.com/) (free, no key, personal use; NOAA models in the US). The last forecasts are saved, so you can check them without signal
+- Turn the wind bar on or off in Layers
+
 ## Folder layout
 ```
 index.html              the page
